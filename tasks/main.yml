@@ -1,0 +1,149 @@
+---
+- name: Render .service files
+  ansible.builtin.template:
+    src: templates/usr/lib/systemd/system/{{ item }}.j2
+    dest: /usr/lib/systemd/system/{{ item }}
+    owner: root
+    group: root
+    mode: 0664
+  with_items:
+    - zeek-loggers.slice
+    - zeek-proxies.slice
+    - zeek-workers.slice
+    - zeek-manager.service
+    - zeek-logger@.service
+    - zeek-proxy@.service
+    - zeek-worker@.service
+    - zeek.target
+
+- name: Render .service files
+  ansible.builtin.template:
+    src: templates/usr/lib/systemd/system/{{ item }}.j2
+    dest: /usr/lib/systemd/system/{{ item }}
+    owner: root
+    group: root
+    mode: 0664
+  with_items:
+    - zeek-manager.service
+    - zeek-logger@.service
+    - zeek-proxy@.service
+    - zeek-worker@.service
+    - zeek.target
+
+- name: Reload the daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Create /etc/zeek/scripts to place cluster-layout.zeek
+  ansible.builtin.file:
+    state: directory
+    dest: /etc/zeek/scripts/
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Render the cluster-layout
+  ansible.builtin.template:
+    src: templates/etc/zeek/scripts/cluster-layout.zeek.j2
+    dest: /etc/zeek/scripts/cluster-layout.zeek
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Render a local file for customization into /etc/zeek/scripts
+  ansible.builtin.template:
+    src: templates/etc/zeek/scripts/ansible-local.zeek.j2
+    dest: /etc/zeek/scripts/ansible-local.zeek
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create working directory base
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ zeek_working_directory }}"
+    owner: zeek
+    group: zeek
+    mode: 0750
+
+- name: Create Zeek manager working directory
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ zeek_working_directory }}/manager"
+    owner: zeek
+    group: zeek
+    mode: 0750
+  when: zeek_manager.instantiate
+
+- name: Create Zeek manager
+  ansible.builtin.systemd:
+    state: started
+    name: "zeek-manager"
+    enabled: yes
+  when: zeek_manager.instantiate
+
+- name: Create Zeek logger working directories
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ zeek_working_directory }}/logger-{{ logger_num + 1}}"
+    owner: zeek
+    group: zeek
+    mode: 0750
+  loop: "{{ zeek_loggers }}"
+  loop_control:
+    index_var: logger_num
+  when: item.instantiate
+
+- name: Create Zeek logger service instances
+  ansible.builtin.systemd:
+    state: started
+    name: "zeek-logger@{{ logger_num + 1}}"
+    enabled: yes
+  loop: "{{ zeek_loggers }}"
+  loop_control:
+    index_var: logger_num
+  when: item.instantiate
+
+- name: Create Zeek proxy working directories
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ zeek_working_directory }}/proxy-{{ proxy_num + 1 }}"
+    owner: zeek
+    group: zeek
+    mode: 0750
+  loop: "{{ zeek_proxies }}"
+  loop_control:
+    index_var: proxy_num
+  when: item.instantiate
+
+- name: Create Zeek proxy service instance
+  ansible.builtin.systemd:
+    state: started
+    name: "zeek-proxy@{{ proxy_num + 1 }}"
+    enabled: yes
+  loop: "{{ zeek_proxies }}"
+  loop_control:
+    index_var: proxy_num
+  when: item.instantiate
+
+- name: Create Zeek worker working directories
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ zeek_working_directory }}/worker-{{ item }}"
+    owner: zeek
+    group: zeek
+    mode: 0750
+  with_sequence: "1-{{ zeek_workers }}"
+
+- name: Create Zeek workers
+  ansible.builtin.systemd:
+    state: started
+    name: "zeek-worker@{{ item }}"
+    enabled: yes
+  with_sequence: "1-{{ zeek_workers }}"
+
+- name: "Restart the Zeek target"
+  ansible.builtin.systemd:
+    state: restarted
+    name: zeek.target
+    enabled: yes

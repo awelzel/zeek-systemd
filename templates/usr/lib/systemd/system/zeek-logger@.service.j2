@@ -1,0 +1,19 @@
+[Unit]
+Description=Zeek Logger %i
+PartOf=zeek.target
+
+[Service]
+{% include 'service-common.j2' %}
+
+MemoryMax={{ zeek_logger_memory_max }}
+
+ReadWritePaths={{ zeek_working_directory }}/logger-%i
+WorkingDirectory={{ zeek_working_directory }}/logger-%i
+
+Environment=CLUSTER_NODE=logger-%i
+ExecStart={{ zeek_logger_exec_start }}
+
+Slice=zeek-loggers.slice
+
+[Install]
+WantedBy=zeek.target

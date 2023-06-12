@@ -1,0 +1,17 @@
+[Unit]
+Description=Zeek Proxy %i
+PartOf=zeek.target
+After=zeek-logger@.service
+
+[Service]
+{% include 'service-common.j2' %}
+
+MemoryMax={{ zeek_proxy_memory_max }}
+
+ReadWritePaths={{ zeek_working_directory }}/proxy-%i
+WorkingDirectory={{ zeek_working_directory }}/proxy-%i
+
+Environment=CLUSTER_NODE=proxy-%i
+ExecStart={{ zeek_proxy_exec_start }}
+
+Slice=zeek-proxies.slice

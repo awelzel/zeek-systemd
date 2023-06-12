@@ -1,0 +1,25 @@
+[Unit]
+Description=Zeek Worker %i
+PartOf=zeek.target
+After=zeek-manager.service zeek-logger@.service zeek-proxy@.service
+
+[Service]
+{% include 'service-common.j2' %}
+
+# Allow reading form network interface
+CapabilityBoundingSet=CAP_NET_RAW
+AmbientCapabilities=CAP_NET_RAW
+
+MemoryMax={{ zeek_worker_memory_max }}
+
+ReadWritePaths={{ zeek_working_directory }}/worker-%i
+WorkingDirectory={{ zeek_working_directory }}/worker-%i
+
+Environment=CLUSTER_NODE=worker-%i
+Environment=INTERFACE={{ zeek_interface }}
+ExecStart={{ zeek_worker_exec_start }}
+
+Slice=zeek-workers.slice
+
+[Install]
+WantedBy=zeek.target

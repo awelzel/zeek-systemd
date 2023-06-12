@@ -1,0 +1,8 @@
+[Unit]
+PartOf=zeek.target
+
+[Slice]
+MemoryMax={{ zeek_workers_memory_max }}
+
+[Install]
+WantedBy=multi-user.target

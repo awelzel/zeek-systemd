@@ -1,0 +1,13 @@
+---
+- name: Deploy Zeek on a single system
+  hosts: localhost
+
+  tasks:
+    - name: Deploy Zeek
+      include_role:
+        name: 'zeek-systemd'
+      vars:
+        zeek_workers: 8
+        zeek_interface: af_packet::enp6s0
+
+

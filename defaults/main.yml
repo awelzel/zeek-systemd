@@ -1,0 +1,82 @@
+---
+# The user and group for running Zeek.
+zeek_user: zeek
+zeek_group: zeek
+
+# Default interface to use. Override with per-worker drop-in files.
+zeek_interface: af_packet::eth0
+
+zeek_restart_sec: 20
+
+# Path to the zeek executable to use
+zeek_base: /opt/zeek-6rc1
+zeek_executable: "{{ zeek_base }}/bin/zeek"
+# The ZEEKPATH to use as colon-separate list of path.
+# /etc/zeek/scripts is where we place cluster-layout.zeek
+zeek_zeekpath: "/etc/zeek/scripts:{{ zeek_base }}/share/zeek:{{ zeek_base }}/share/zeek/policy:{{ zeek_base }}/share/zeek/site:{{ zeek_base }}/share/zeek/builtin-plugins"
+
+# Where to place working directories for individual processes.
+zeek_working_directory: /var/lib/zeek
+
+# The manager to place into the cluster-layout file.
+zeek_manager:
+  listen_address: 127.0.0.1
+  listen_port: 27760
+  instantiate: true
+
+
+# The proxies to place into the cluster-layout file
+zeek_proxies:
+  - listen_address: 127.0.0.1
+    listen_port: 27761
+    instantiate: true
+  - listen_address: 127.0.0.1
+    listen_port: 27762
+    instantiate: true
+
+
+# The loggers to place into the cluster-layout file.
+zeek_loggers:
+  - listen_address: 127.0.0.1
+    listen_port: 27763
+    instantiate: true
+  - listen_address: 127.0.0.1
+    listen_port: 27764
+    instantiate: true
+  - listen_address: 127.0.0.1
+    listen_port: 27765
+    instantiate: true
+
+
+# The number of Zeek workers to run.
+zeek_workers: 2
+zeek_worker_ip: 127.0.0.1
+
+
+# Start commands used.
+zeek_manager_exec_start: '{{ zeek_executable }} ansible-local'
+zeek_logger_exec_start: '{{ zeek_executable }} ansible-local'
+zeek_proxy_exec_start: '{{ zeek_executable }} ansible-local'
+zeek_worker_exec_start: '{{ zeek_executable }} -i $INTERFACE ansible-local'
+
+
+## Resource limit configuration
+##
+## systemd allows us to set limits on individual processes, but also
+## on the collection of same-type processes.
+
+# MemoryMax for all workers
+zeek_workers_memory_max: 8192M
+# MemoryMax for all loggers
+zeek_loggers_memory_max: 2048M
+# MemoryMax for all proxies
+zeek_proxies_memory_max: 4096M
+
+# MemoryMax for manager
+zeek_manager_memory_max: 4096M
+# MemoryMax for individual worker process
+zeek_worker_memory_max: 1024M
+# MemoryMax for individual logger process
+zeek_logger_memory_max: 1024M
+# MemoryMax for individual proxy process
+zeek_proxy_memory_max: 1024M

@@ -1,0 +1,14 @@
+redef Cluster::nodes += {
+	["manager"] = [$node_type=Cluster::MANAGER, $ip={{ zeek_manager.listen_address  }}, $p={{ zeek_manager.listen_port }}/tcp],
+{% for logger in zeek_loggers %}
+	["logger-{{ loop.index }}"] = [$node_type=Cluster::LOGGER, $ip={{ logger.listen_address  }}, $p={{ logger.listen_port }}/tcp],
+{% endfor %}
+	####
+{% for proxy in zeek_proxies %}
+	["proxy-{{ loop.index }}"] = [$node_type=Cluster::PROXY, $ip={{ proxy.listen_address  }}, $p={{ proxy.listen_port }}/tcp],
+{% endfor %}
+	####
+{% for i in range(1, zeek_workers + 1) %}
+	["worker-{{ i }}"] = [$node_type=Cluster::WORKER, $ip={{ zeek_worker_ip}}],
+{% endfor %}
+};

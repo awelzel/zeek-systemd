@@ -1,0 +1,10 @@
+@load base/frameworks/cluster
+
+@load local
+
+# Flip off log rotation for now.
+@if ( Cluster::local_node_type() == Cluster::LOGGER)
+
+redef Log::default_rotation_interval = 0sec;
+redef Log::default_rotation_postprocessor_cmd = "";
+@endif

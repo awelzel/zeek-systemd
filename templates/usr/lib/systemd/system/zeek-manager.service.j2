@@ -1,0 +1,20 @@
+[Unit]
+Description=Zeek Manager
+PartOf=zeek.target
+After=zeek-logger@.service
+
+[Service]
+MemoryMax={{ zeek_manager_memory_max }}
+
+{% include 'service-common.j2' %}
+
+ReadWritePaths={{ zeek_working_directory }}/manager
+WorkingDirectory={{ zeek_working_directory }}/manager
+
+Environment=CLUSTER_NODE=manager
+ExecStart={{ zeek_manager_exec_start }}
+
+Slice=zeek.slice
+
+[Install]
+WantedBy=zeek.target

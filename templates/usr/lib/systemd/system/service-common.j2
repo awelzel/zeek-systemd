@@ -1,0 +1,26 @@
+User={{ zeek_user }}
+Group={{ zeek_group }}
+
+# Confine the Zeek process as much as possible
+NoNewPrivileges=yes
+ProtectSystem=strict
+PrivateTmp=yes
+ProtectHome=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+
+# Default seccomp settings
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# Faster reconnects
+Environment=ZEEK_DEFAULT_CONNECT_RETRY=3
+Environment=ZEEK_DEFAULT_LISTEN_RETRY=3
+
+Environment=ZEEKPATH={{ zeek_zeekpath }}
+
+# Restart policy
+RestartSec={{ zeek_restart_sec }}
+Restart=always
