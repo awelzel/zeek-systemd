@@ -69,7 +69,7 @@ export CLUSTER_NODE=manager
 zeek -a ansible-local
 
 export CLUSTER_NODE=worker
-zeek -i $INTERFACE ansible-local'
+zeek -i $INTERFACE ansible-local
 ```
 
 License
