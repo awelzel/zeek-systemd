@@ -27,6 +27,51 @@ Example Playbook
           zeek_workers: 8
           zeek_interface: af_packet::enp6s0
 
+Differences from Zeekctl
+------------------------
+
+For those familiar with zeekctl and it's configuration, there are a couple important things to note.  The node.cfg and networks.cfg files are not used with a systemd configuration.
+
+Previously, zeekctl would convert node.cfg file into a cluster-layout.zeek file that would be placed into your local site directory when zeek was deployed and automatically loaded when zeek starts.  The provided ansible tasks create this for you instead.
+
+Another important file was networks.cfg where you would define your local networks.  This was converted by zeekctl into local-networks.zeek that has the following format:
+
+```
+redef Site::local_nets = {
+        10.0.0.0/24,        # Some local ipv4 space
+        [fe80::]/120,       # Some local ipv6 space
+};
+```
+
+The current interation of this repo does _not_ create this file for you.
+
+Use and Debugging
+---------
+
+With this setup you can start/stop zeek using systemctl:
+
+```
+systemctl [start/stop/restart] zeek.target
+```
+Since we are using systemctl, we can also use various forms of journalctl to do some debugging:
+```
+journalctl -u 'zeek-worker@1' -n 20         # get data about a specific worker
+journalctl -u 'zeek-worker*' -n 20          # get data about all workers
+journalctl -u 'zeek-manager@logger' -n 20   # get data about the manager/proxy/logger
+journalctl -u 'zeek*' -n 20                # get everything
+journalctl -u 'zeek*' -n 20 --no-pager     # no-pager for long lines
+```
+
+Often times if there is a script error it will be necessary to try running zeek by hand to find the exact issue.  This configuration creates an ansible-local directory which you may also want to include when test loading zeek:
+
+```
+export CLUSTER_NODE=manager
+zeek -a ansible-local
+
+export CLUSTER_NODE=worker
+zeek -i $INTERFACE ansible-local'
+```
+
 License
 -------
 
