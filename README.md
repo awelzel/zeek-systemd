@@ -1,3 +1,8 @@
+This repository was archived. Since release 8.1, Zeek ship a [zeek-systemd-generator](https://github.com/zeek/zeek/tree/master/tools/systemd-generator) that will setup a Zeek cluster based on the `zeek.conf` configuration file.
+
+---
+
+
 Zeek Systemd
 ============
 
